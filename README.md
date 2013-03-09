@@ -33,10 +33,10 @@ world.remove(node2);
 
 Options:
 --------
-*Arc3d.World:* radius
+**Arc3d.World:** *radius*
 
-*Arc3d.Node:* color, radius
+**Arc3d.Node:** *color, radius*
 
-*Arc3d.Edge:* color, lineWidth, segments
+**Arc3d.Edge:** *color, lineWidth, segments*
 
-*Arc3d.Edge.sendData:* datacolor, speed, size
+**Arc3d.Edge.sendData:** *datacolor, speed, size*
