@@ -72,9 +72,9 @@ Arc3d.World = function(container, options) {
 
     // Earth
     var earthGeo = new THREE.SphereGeometry(self._options.radius, 25, 25);
-    var earthTexture = THREE.ImageUtils.loadTexture('/images/earth.jpg');
-    var earthTextureSpec = THREE.ImageUtils.loadTexture('/images/earthspec.jpg');
-    var earthTextureBump = THREE.ImageUtils.loadTexture('/images/earthbump.jpg');
+    var earthTexture = THREE.ImageUtils.loadTexture('./images/earth.jpg');
+    var earthTextureSpec = THREE.ImageUtils.loadTexture('./images/earthspec.jpg');
+    var earthTextureBump = THREE.ImageUtils.loadTexture('./images/earthbump.jpg');
     var earthMat = new THREE.MeshPhongMaterial({
       map: earthTexture,
       specularMap: earthTextureSpec,
