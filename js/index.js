@@ -1,5 +1,6 @@
 $(document).ready(function() {
-  var arc = new Arc3d.World(document.getElementById('container'));
+  var container = document.getElementById('container');
+  var arc = new Arc3d.World(container);
 
   var directionsLat = ['n', 's'];
   var directionsLong = ['e', 'w'];
