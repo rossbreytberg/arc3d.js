@@ -78,16 +78,20 @@ Arc3d.World = function(container, options) {
     var earthMat = new THREE.MeshPhongMaterial({
       map: earthTexture,
       specularMap: earthTextureSpec,
-      specular: 0x55555,
+      specular: 0x555555,
       bumpMap: earthTextureBump
     });
     var earthMesh = new THREE.Mesh(earthGeo, earthMat);
     earthMesh.rotation.y = -Math.PI/2;
+    earthMesh.castShadow = true;
+    earthMesh.receiveShadow = true;
     scene.add(earthMesh);
 
     // Lights
     this._light = new THREE.DirectionalLight(0xffffff);
     this._light.position.set(0, 0.25, 1);
+    this._light.castShadow = true;
+    this._light.shadowDarkness = 1;
     scene.add(this._light);
     // light.castShadow = true;
     // light.shadowMapBias = 0.001
@@ -103,8 +107,8 @@ Arc3d.World = function(container, options) {
     scene.add(lightMesh);
 */
 
-    var ambientLight = new THREE.AmbientLight(0x555555);
-    scene.add(ambientLight);
+    //var ambientLight = new THREE.AmbientLight(0x555555);
+    //scene.add(ambientLight);
 
     // renderer
     renderer = new THREE.WebGLRenderer({
@@ -154,7 +158,7 @@ Arc3d.World = function(container, options) {
     render();
     controls.update();
     stats.update();
-    var axis = new THREE.Vector3( 0, 1, 0 );
+    var axis = new THREE.Vector3(0, 1, 0);
     var matrix = new THREE.Matrix4().makeRotationAxis(axis, 0.01);
     this._light.position.applyMatrix4(matrix);
     keyControl();
@@ -198,21 +202,25 @@ Arc3d.World.prototype.add = function(obj) {
     obj._position.y = this._options.radius * Math.cos(obj._phi);
     var geometry = new THREE.SphereGeometry(obj._options.radius, 25, 25);
     var material = new THREE.MeshPhongMaterial({
-      color: obj._options.color
+      color: obj._options.color,
+      specular: 0xffffff,
+      shininess: 1000
     });
     obj._mesh = new THREE.Mesh(geometry, material);
     obj._mesh.position.x = obj._position.x;
     obj._mesh.position.y = obj._position.y;
     obj._mesh.position.z = obj._position.z;
+    obj._mesh.castShadow = true;
+    obj._mesh.receiveShadow = true;
     this._scene.add(obj._mesh);
   } else if (obj instanceof Arc3d.Edge) {
     var normalizedMidpoint = Arc3d.Util.normalize(Arc3d.Util.midPoint(obj._node1._position, obj._node2._position));
     var surfaceMidpoint = Arc3d.Util.scale(normalizedMidpoint, this._options.radius);
     var dist = Arc3d.Util.dist(obj._node1._position, obj._node2._position);
     obj._midpoint = Arc3d.Util.add(surfaceMidpoint, Arc3d.Util.scale(normalizedMidpoint, dist));
-    var curve = new THREE.QuadraticBezierCurve3(obj._node1._position, obj._midpoint, obj._node2._position);
+    obj._curve = new THREE.QuadraticBezierCurve3(obj._node1._position, obj._midpoint, obj._node2._position);
     var curvePath = new THREE.CurvePath();
-    curvePath.add(curve);
+    curvePath.add(obj._curve);
     var geometry = curvePath.createSpacedPointsGeometry(obj._options.segments);
     var material = new THREE.LineBasicMaterial({
       color: obj._options.color,
