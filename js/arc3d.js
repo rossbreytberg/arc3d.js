@@ -235,7 +235,7 @@ Arc3d.World.prototype.add = function(obj) {
     var geometry = curvePath.createSpacedPointsGeometry(obj._options.segments);
     var material = new THREE.LineBasicMaterial({
       color: obj._options.color,
-      linewidth: obj._options.linewidth
+      lineWidth: obj._options.lineWidth
     });
     obj._scene = this._scene;
     obj._mesh = new THREE.Line(geometry, material);
@@ -308,7 +308,7 @@ Arc3d.Node = function(latitude, longitude, options) {
 Arc3d.Edge = function(node1, node2, options) {
   var self = this;
 
-  this._options = {color: 0xffffff * Math.random(), linewidth: 1, segments: 25};
+  this._options = {color: 0xffffff * Math.random(), lineWidth: 1, segments: 25};
 
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
