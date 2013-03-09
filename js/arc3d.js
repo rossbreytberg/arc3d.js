@@ -107,8 +107,8 @@ Arc3d.World = function(container, options) {
     scene.add(lightMesh);
 */
 
-    //var ambientLight = new THREE.AmbientLight(0x555555);
-    //scene.add(ambientLight);
+    var ambientLight = new THREE.AmbientLight(0x555555);
+    scene.add(ambientLight);
 
     // renderer
     renderer = new THREE.WebGLRenderer({
@@ -132,7 +132,7 @@ Arc3d.World = function(container, options) {
     effectCopy.renderToScreen = true;
     composer = new THREE.EffectComposer( renderer );
     composer.addPass( renderModel );
-    composer.addPass( effectFXAA );
+    //composer.addPass( effectFXAA );
     //composer.addPass( effectBloom );
     composer.addPass( effectCopy );
 
@@ -162,6 +162,7 @@ Arc3d.World = function(container, options) {
     var matrix = new THREE.Matrix4().makeRotationAxis(axis, 0.01);
     this._light.position.applyMatrix4(matrix);
     keyControl();
+    TWEEN.update();
 
   }
 
@@ -201,10 +202,8 @@ Arc3d.World.prototype.add = function(obj) {
     obj._position.x = this._options.radius * Math.sin(obj._theta) * Math.sin(obj._phi);
     obj._position.y = this._options.radius * Math.cos(obj._phi);
     var geometry = new THREE.SphereGeometry(obj._options.radius, 25, 25);
-    var material = new THREE.MeshPhongMaterial({
-      color: obj._options.color,
-      specular: 0xffffff,
-      shininess: 1000
+    var material = new THREE.MeshBasicMaterial({
+      color: obj._options.color
     });
     obj._mesh = new THREE.Mesh(geometry, material);
     obj._mesh.position.x = obj._position.x;
@@ -215,6 +214,18 @@ Arc3d.World.prototype.add = function(obj) {
     this._scene.add(obj._mesh);
   } else if (obj instanceof Arc3d.Edge) {
     var normalizedMidpoint = Arc3d.Util.normalize(Arc3d.Util.midPoint(obj._node1._position, obj._node2._position));
+    if (normalizedMidpoint.x == 0 && normalizedMidpoint.y == 0 && normalizedMidpoint.z == 0) {
+      var axis = new THREE.Vector3(0, 1, 0);
+      var matrix = new THREE.Matrix4().makeRotationAxis(axis, Math.PI/2);
+      var copyNode1 = new THREE.Vector3(obj._node1._position.x, obj._node1._position.y, obj._node1._position.z);
+      copyNode1.applyMatrix4(matrix);
+      if (obj._node1.position.x == copyNode1.x && obj._node1.position.y == copyNode1.y && obj._node1.position.z == copyNode1.z) {
+        axis = new THREE.Vector3(0, 0, 1);
+        matrix = new THREE.Matrix4().makeRotationAxis(axis, Math.PI/2);
+        copyNode1 = new THREE.Vector3(obj._node1._position.x, obj._node1._position.y, obj._node1._position.z);
+      }
+      normalizedMidpoint = Arc3d.Util.normalize(copyNode1);
+    }
     var surfaceMidpoint = Arc3d.Util.scale(normalizedMidpoint, this._options.radius);
     var dist = Arc3d.Util.dist(obj._node1._position, obj._node2._position);
     obj._midpoint = Arc3d.Util.add(surfaceMidpoint, Arc3d.Util.scale(normalizedMidpoint, dist));
@@ -226,6 +237,7 @@ Arc3d.World.prototype.add = function(obj) {
       color: obj._options.color,
       linewidth: obj._options.linewidth
     });
+    obj._scene = this._scene;
     obj._mesh = new THREE.Line(geometry, material);
     this._scene.add(obj._mesh);
   } else {
@@ -258,7 +270,7 @@ Arc3d.World.prototype.remove = function(obj) {
 Arc3d.Node = function(latitude, longitude, options) {
   var self = this;
 
-  this._options = {color: 0xffffff * Math.random(), radius: 10};
+  this._options = {color: 0xffffff * Math.random(), radius: 5};
 
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
@@ -308,6 +320,7 @@ Arc3d.Edge = function(node1, node2, options) {
   Arc3d._nextID++;
 
   this._mesh = null;
+  this._scene = null;
 
   node1._edges[this._ID] = this;
   node2._edges[this._ID] = this;
@@ -316,5 +329,51 @@ Arc3d.Edge = function(node1, node2, options) {
   this._node2 = node2;
 
   this._midpoint = {x: null, y: null, z: null};
+};
 
+Arc3d.Edge.prototype.sendData = function(direction, options) {
+  var self = this;
+
+  var opts = {dataColor: 0x33ff33, speed: 5000, size: 5}
+
+  for (var key in options) {
+    if (options.hasOwnProperty(key)) {
+      opts[key] = options[key];
+    }
+  }
+
+  var geometry = new THREE.SphereGeometry(opts.size, 3, 3);
+  var material = new THREE.MeshBasicMaterial({
+    color: opts.dataColor
+  });
+  var mesh = new THREE.Mesh(geometry, material);
+  var xA = [];
+  var yA = [];
+  var zA = [];
+  if (direction > 0) {
+    mesh.position.x = this._node1._position.x;
+    mesh.position.y = this._node1._position.y;
+    mesh.position.z = this._node1._position.z;
+    xA.push(this._midpoint.x);
+    yA.push(this._midpoint.y);
+    zA.push(this._midpoint.z);
+    xA.push(this._node2._position.x);
+    yA.push(this._node2._position.y);
+    zA.push(this._node2._position.z);
+  } else {
+    mesh.position.x = this._node2._position.x;
+    mesh.position.y = this._node2._position.y;
+    mesh.position.z = this._node2._position.z;
+    xA.push(this._midpoint.x);
+    yA.push(this._midpoint.y);
+    zA.push(this._midpoint.z);
+    xA.push(this._node1._position.x);
+    yA.push(this._node1._position.y);
+    zA.push(this._node1._position.z);
+  }
+  self._scene.add(mesh);
+  new TWEEN.Tween(mesh.position).to( { x: xA, y: yA, z:zA }, opts.speed ).interpolation(TWEEN.Interpolation.Bezier).easing( TWEEN.Easing.Quadratic.InOut ).delay(3000).start().onComplete(function() {
+    self._scene.remove(mesh);
+
+  });
 };
