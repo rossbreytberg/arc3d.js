@@ -3,8 +3,11 @@ arc3d.js
 
 Show a 3d globe using webGL and map graph nodes and edges onto it with the simple api.
 
-Example:
+Demo:
+http://rossbreytberg.github.com/arc3d.js/
 
+Example:
+--------
 ```javascript
 var container = document.getElementById('container'); // container for the visualization to occupy
 var world = new Arc3d.World(container, {OPTIONS});
@@ -29,11 +32,11 @@ world.remove(node2);
 ```
 
 Options:
+--------
+*Arc3d.World:* radius
 
-Arc3d.World: radius
+*Arc3d.Node:* color, radius
 
-Arc3d.Node: color, radius
+*Arc3d.Edge:* color, lineWidth, segments
 
-Arc3d.Edge: color, lineWidth, segments
-
-Arc3d.Edge.sendData: datacolor, speed, size
+*Arc3d.Edge.sendData:* datacolor, speed, size
