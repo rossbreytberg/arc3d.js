@@ -9,7 +9,8 @@ Example:
 var container = document.getElementById('container'); // container for the visualization to occupy
 var world = new Arc3d.World(container, {OPTIONS});
 
-var node1 = new Arc3d.Node([DEGREES, MINUTES, SECONDS, 'n'/'s'],[DEGREES, MINUTES, SECONDS, 'e'/'w'], {OPTIONS}); // create nodes with latitude and longitude coordinates
+// create nodes with latitude and longitude coordinates
+var node1 = new Arc3d.Node([DEGREES, MINUTES, SECONDS, 'n'/'s'],[DEGREES, MINUTES, SECONDS, 'e'/'w'], {OPTIONS});
 var node2 = new Arc3d.Node([DEGREES, MINUTES, SECONDS, 'n'/'s'],[DEGREES, MINUTES, SECONDS, 'e'/'w'], {OPTIONS});
 
 var edge = new Arc3d.Edge(node1, node2, {OPTIONS}); // create edge connecting two nodes
