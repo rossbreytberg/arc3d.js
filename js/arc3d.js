@@ -47,7 +47,7 @@ Arc3d.World = function(container, options) {
 
     controls = new THREE.OrbitControls(camera);
     controls.addEventListener('change', render);
-    controls.autoRotate = true;
+    controls.autoRotate = false;
 
     camera.position.x = 0;
     camera.position.y = 2500;
@@ -72,21 +72,28 @@ Arc3d.World = function(container, options) {
 
     // Earth
     var earthGeo = new THREE.SphereGeometry(self._options.radius, 25, 25);
+    var earthTexture = THREE.ImageUtils.loadTexture('/images/earth.jpg');
+    var earthTextureSpec = THREE.ImageUtils.loadTexture('/images/earthspec.jpg');
+    var earthTextureBump = THREE.ImageUtils.loadTexture('/images/earthbump.jpg');
     var earthMat = new THREE.MeshPhongMaterial({
-      color: 0x44ff44
+      map: earthTexture,
+      specularMap: earthTextureSpec,
+      specular: 0x55555,
+      bumpMap: earthTextureBump
     });
     var earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    earthMesh.rotation.y = -Math.PI/2;
     scene.add(earthMesh);
 
     // Lights
-    var light = new THREE.PointLight(0xffffff, 1, 20000);
-    light.position.set(0, 1500, 0);
+    this._light = new THREE.DirectionalLight(0xffffff);
+    this._light.position.set(0, 0.25, 1);
+    scene.add(this._light);
     // light.castShadow = true;
     // light.shadowMapBias = 0.001
     // light.shadowMapWidth = light.shadowMapHeight = 2048;
     // light.shadowMapDarkness = .6;
-    scene.add(light);
-
+/*
     var lightGeo = new THREE.SphereGeometry(300, 25, 25);
     var lightMat = new THREE.MeshBasicMaterial({
       color: 0xffffff
@@ -94,10 +101,10 @@ Arc3d.World = function(container, options) {
     var lightMesh = new THREE.Mesh(lightGeo, lightMat);
     lightMesh.position.y = 1500;
     scene.add(lightMesh);
+*/
 
-
-    //var ambientLight = new THREE.AmbientLight( 0x999999 );
-    //scene.add( ambientLight );
+    var ambientLight = new THREE.AmbientLight(0x555555);
+    scene.add(ambientLight);
 
     // renderer
     renderer = new THREE.WebGLRenderer({
@@ -121,7 +128,7 @@ Arc3d.World = function(container, options) {
     effectCopy.renderToScreen = true;
     composer = new THREE.EffectComposer( renderer );
     composer.addPass( renderModel );
-    //composer.addPass( effectFXAA );
+    composer.addPass( effectFXAA );
     //composer.addPass( effectBloom );
     composer.addPass( effectCopy );
 
@@ -147,7 +154,9 @@ Arc3d.World = function(container, options) {
     render();
     controls.update();
     stats.update();
-
+    var axis = new THREE.Vector3( 0, 1, 0 );
+    var matrix = new THREE.Matrix4().makeRotationAxis(axis, 0.01);
+    this._light.position.applyMatrix4(matrix);
     keyControl();
 
   }
@@ -187,7 +196,6 @@ Arc3d.World.prototype.add = function(obj) {
     obj._position.z = this._options.radius * Math.cos(obj._theta) * Math.sin(obj._phi);
     obj._position.x = this._options.radius * Math.sin(obj._theta) * Math.sin(obj._phi);
     obj._position.y = this._options.radius * Math.cos(obj._phi);
-    console.log(obj._theta, obj._phi);
     var geometry = new THREE.SphereGeometry(obj._options.radius, 25, 25);
     var material = new THREE.MeshPhongMaterial({
       color: obj._options.color
@@ -207,10 +215,10 @@ Arc3d.World.prototype.add = function(obj) {
     curvePath.add(curve);
     var geometry = curvePath.createSpacedPointsGeometry(obj._options.segments);
     var material = new THREE.LineBasicMaterial({
-      color: obj._options.color
+      color: obj._options.color,
+      linewidth: obj._options.linewidth
     });
     obj._mesh = new THREE.Line(geometry, material);
-    console.log(obj._mesh);
     this._scene.add(obj._mesh);
   } else {
     console.error('Arc3d.World.add: INVALID OBJECT TYPE SUPPLIED');
@@ -242,7 +250,7 @@ Arc3d.World.prototype.remove = function(obj) {
 Arc3d.Node = function(latitude, longitude, options) {
   var self = this;
 
-  this._options = {color: 0xffffff * Math.random(), radius: 25};
+  this._options = {color: 0xffffff * Math.random(), radius: 10};
 
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
@@ -280,7 +288,7 @@ Arc3d.Node = function(latitude, longitude, options) {
 Arc3d.Edge = function(node1, node2, options) {
   var self = this;
 
-  this._options = {color: 0xffffff * Math.random(), segments: 25};
+  this._options = {color: 0xffffff * Math.random(), linewidth: 1, segments: 25};
 
   for (var key in options) {
     if (options.hasOwnProperty(key)) {
