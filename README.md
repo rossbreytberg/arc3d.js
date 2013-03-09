@@ -5,6 +5,7 @@ Show a 3d globe using webGL and map graph nodes and edges onto it with the simpl
 
 Example:
 
+```javascript
 var container = document.getElementById('container'); // container for the visualization to occupy
 var world = new Arc3d.World(container, {OPTIONS});
 
@@ -24,6 +25,7 @@ edge.sendData(1/-1, {OPTIONS}); // run animation along edge, forward if 1, rever
 world.remove(edge);
 world.remove(node1);
 world.remove(node2);
+```
 
 Options:
 
